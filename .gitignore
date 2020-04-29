@@ -118,7 +118,6 @@ all.config
 
 # fetched Android config fragments
 kernel/configs/android-*.cfg
-
 out/*
-linux-stable.sh
 rkkernel.sh
+linux-stable.sh
