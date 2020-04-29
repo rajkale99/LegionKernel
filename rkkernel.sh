@@ -10,7 +10,7 @@ function build_kern() {
     BUILD_START=$(date +"%s")
 
     # cleaup first
-    make clean && make mrproper
+#    make clean && make mrproper
 
     # building
     make O=out $CONFIG $THREAD
