@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2020, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2013-2018, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -13,7 +13,6 @@
 #include <media/v4l2-subdev.h>
 #include <asm/div64.h>
 #include "msm_isp_util.h"
-#include "msm_isp_stats_util.h"
 #include "msm_isp_axi_util.h"
 #include "trace/events/msm_cam.h"
 
@@ -826,50 +825,6 @@ static void msm_isp_check_for_output_error(struct vfe_device *vfe_dev,
 
 	vfe_dev->reg_updated = 0;
 
-	/* find highest frame id */
-	for (i = 0; i < MAX_VFE * VFE_SRC_MAX; i++) {
-		if (ms_res->src_info[i] == NULL)
-			continue;
-		if (src_info == ms_res->src_info[i] ||
-			ms_res->src_info[i]->active == 0)
-			continue;
-		if (frame_id >= ms_res->src_info[i]->frame_id)
-			continue;
-		frame_id = ms_res->src_info[i]->frame_id;
-		master_time = ms_res->src_info[i]->
-			dual_hw_ms_info.sof_info.mono_timestamp_ms;
-	}
-	/* copy highest frame id to the intf based on sof delta */
-	current_time = ts->buf_time.tv_sec * 1000 +
-		ts->buf_time.tv_usec / 1000;
-
-	if (current_time > master_time &&
-		(current_time - master_time) > ms_res->sof_delta_threshold) {
-		if (frame_src == VFE_PIX_0)
-			frame_id += vfe_dev->axi_data.src_info[frame_src].
-					sof_counter_step;
-		else
-			frame_id += 1;
-	} else {
-		for (i = 0; i < MAX_VFE * VFE_SRC_MAX; i++) {
-			if (ms_res->src_info[i] == NULL)
-				continue;
-			if (src_info == ms_res->src_info[i] ||
-				((1 << ms_res->src_info[i]->
-					dual_hw_ms_info.index) &
-				ms_res->active_src_mask) == 0)
-				continue;
-			if (ms_res->src_info[i]->frame_id == frame_id)
-				ms_res->src_sof_mask |= (1 <<
-				ms_res->src_info[i]->dual_hw_ms_info.index);
-		}
-	}
-	/* the number of frames that are dropped */
-	vfe_dev->isp_page->dual_cam_drop =
-				frame_id - (src_info->frame_id + 1);
-	ms_res->active_src_mask |= (1 << src_info->dual_hw_ms_info.index);
-	src_info->frame_id = frame_id;
-	src_info->dual_hw_ms_info.sync_state = MSM_ISP_DUAL_CAM_SYNC;
 }
 
 void msm_isp_increment_frame_id(struct vfe_device *vfe_dev,
@@ -892,51 +847,29 @@ void msm_isp_increment_frame_id(struct vfe_device *vfe_dev,
 			ts);
 	dual_hw_type =
 		vfe_dev->axi_data.src_info[frame_src].dual_hw_type;
-	ms_type =
-		vfe_dev->axi_data.src_info[frame_src].
-		dual_hw_ms_info.dual_hw_ms_type;
+	ms_type = vfe_dev->axi_data.src_info[frame_src].
+			dual_hw_ms_info.dual_hw_ms_type;
+	src_info = vfe_dev->axi_data.src_info;
 
-	src_info = &vfe_dev->axi_data.src_info[frame_src];
-	if (dual_hw_type == DUAL_HW_MASTER_SLAVE) {
-		msm_isp_sync_dual_cam_frame_id(vfe_dev, ms_res, frame_src, ts);
-		if (src_info->dual_hw_ms_info.sync_state ==
-			MSM_ISP_DUAL_CAM_SYNC) {
-			/*
-			 * for dual hw check that we recv sof from all
-			 * linked intf
-			 */
-			if (ms_res->src_sof_mask & (1 <<
-				src_info->dual_hw_ms_info.index)) {
-				pr_err_ratelimited("Frame out of sync on vfe %d\n",
-					vfe_dev->pdev->id);
-				/* Notify to do reconfig at SW sync drop*/
-				vfe_dev->isp_page->dual_cam_drop_detected = 1;
-				/*
-				 * set this isp as async mode to force
-				 *it sync again at the next sof
-				 */
-				src_info->dual_hw_ms_info.sync_state =
-							MSM_ISP_DUAL_CAM_ASYNC;
-				/*
-				 * set the other isp as async mode to force
-				 * it sync again at the next sof
-				 */
-				for (i = 0; i < MAX_VFE * VFE_SRC_MAX; i++) {
-					if (ms_res->src_info[i] == NULL)
-						continue;
-					if (src_info == ms_res->src_info[i] ||
-						ms_res->src_info[i]->
-								active == 0)
-						continue;
-					ms_res->src_info[i]->dual_hw_ms_info.
-							sync_state =
-							MSM_ISP_DUAL_CAM_ASYNC;
-				}
-			}
-			ms_res->src_sof_mask |= (1 <<
-					src_info->dual_hw_ms_info.index);
-			if (ms_res->active_src_mask == ms_res->src_sof_mask)
-				ms_res->src_sof_mask = 0;
+	if (src_info[frame_src].frame_id == 0) {
+		for (i = VFE_PIX_0; i < VFE_SRC_MAX; i++) {
+			if (i == frame_src)
+				continue;
+
+			if (src_info[frame_src].session_id !=
+				src_info[i].session_id)
+				continue;
+
+			if (src_info[i].active == 0)
+				continue;
+
+			if (i == VFE_PIX_0)
+				temp_frame_id = src_info[i].frame_id - 1;
+			else
+				temp_frame_id = src_info[i].frame_id;
+
+			if (src_info[frame_src].frame_id < temp_frame_id)
+				src_info[frame_src].frame_id = temp_frame_id;
 		}
 	}
 
@@ -2276,8 +2209,8 @@ static int msm_isp_process_done_buf(struct vfe_device *vfe_dev,
 			MSM_ISP_BUFFER_STATE_PUT_BUF;
 		buf->buf_debug.put_state_last ^= 1;
 		rc = vfe_dev->buf_mgr->ops->buf_done(vfe_dev->buf_mgr,
-		 buf->bufq_handle, buf->buf_idx, time_stamp,
-		 frame_id, stream_info->runtime_output_format);
+			buf->bufq_handle, buf->buf_idx, time_stamp,
+			frame_id, stream_info->runtime_output_format);
 		if (rc == -EFAULT) {
 			msm_isp_halt_send_error(vfe_dev,
 					ISP_EVENT_BUF_FATAL_ERROR);
@@ -3574,9 +3507,6 @@ static int msm_isp_request_frame(struct vfe_device *vfe_dev,
 			stream_info->undelivered_request_cnt--;
 			pr_err_ratelimited("%s:%d fail to cfg HAL buffer\n",
 				__func__, __LINE__);
-			queue_req->cmd_used = 0;
-			list_del(&queue_req->list);
-			stream_info->request_q_cnt--;
 			return rc;
 		}
 
@@ -3623,9 +3553,6 @@ static int msm_isp_request_frame(struct vfe_device *vfe_dev,
 						flags);
 			pr_err_ratelimited("%s:%d fail to cfg HAL buffer\n",
 				__func__, __LINE__);
-			queue_req->cmd_used = 0;
-			list_del(&queue_req->list);
-			stream_info->request_q_cnt--;
 			return rc;
 		}
 	} else {
