@@ -27,7 +27,7 @@
 	interrupt-parent = <&wakegic>;
 
 	chosen {
-		bootargs = "core_ctl_disable_cpumask=0-7 kpti=0";
+		bootargs = "quiet core_ctl_disable_cpumask=0-7 kpti=0 noirqdebug";
 	};
 
 	vendor: vendor {
@@ -903,7 +903,9 @@
 			 < 400000000   4 >,  /* SVS Plus  */
 			 < 510000000   5 >,  /* NOM       */
 			 < 560000000   6 >,  /* Nom Plus  */
-			 < 650000000   7 >;  /* Turbo     */
+			 < 650000000   7 >,  /* Turbo     */
+			 < 700000000   8 >,
+			 < 750000000   9 >;
 		#clock-cells = <1>;
 	};
 
@@ -912,10 +914,10 @@
 		reg =	 <0xb114000  0x68>,
 			 <0xb014000  0x68>,
 			 <0xb116000  0x400>,
-			 <0xb111050  0x08>,
-			 <0xb011050  0x08>,
-			 <0xb1d1050  0x08>,
-			 <0x00a4124  0x08>;
+			 <0xb111050  0x09>,
+			 <0xb011050  0x09>,
+			 <0xb1d1050  0x09>,
+			 <0x00a4124  0x09>;
 		reg-names = "rcgwr-c0-base", "rcgwr-c1-base",
 				"c0-pll", "c0-mux", "c1-mux",
 				"cci-mux", "efuse";
@@ -932,7 +934,9 @@
 			< 1689600000 4>,
 			< 1804800000 5>,
 			< 1958400000 6>,
-			< 2016000000 7>;
+			< 2016000000 7>,
+                        < 2150400000 8>,
+                        < 2208000000 9>;
 		qcom,speed0-bin-v0-cci =
 			<          0 0>,
 			<  261120000 1>,
@@ -941,7 +945,9 @@
 			<  675840000 4>,
 			<  721920000 5>,
 			<  783360000 6>,
-			<  806400000 7>;
+			<  806400000 7>,
+                        <  860160000 8>,
+                        <  883200000 9>;
 		qcom,speed2-bin-v0-cl =
 			<          0 0>,
 			<  652800000 1>,
@@ -950,7 +956,9 @@
 			< 1689600000 4>,
 			< 1804800000 5>,
 			< 1958400000 6>,
-			< 2016000000 7>;
+			< 2016000000 7>,
+                        < 2150400000 8>,
+                        < 2208000000 9>;
 		qcom,speed2-bin-v0-cci =
 			<          0 0>,
 			<  261120000 1>,
@@ -959,7 +967,9 @@
 			<  675840000 4>,
 			<  721920000 5>,
 			<  783360000 6>,
-			<  806400000 7>;
+			<  806400000 7>,
+                        <  860160000 8>,
+                        <  883200000 9>;
 		qcom,speed7-bin-v0-cl =
 			<          0 0>,
 			<  652800000 1>,
@@ -988,14 +998,22 @@
 			< 1036800000 2>,
 			< 1401600000 3>,
 			< 1689600000 4>,
-			< 1804800000 5>;
+			< 1804800000 5>,
+                        < 1958400000 6>,
+                        < 2016000000 7>,
+                        < 2150400000 8>,
+                        < 2208000000 9>;			
 		qcom,speed6-bin-v0-cci =
 			<          0 0>,
 			<  261120000 1>,
 			<  414720000 2>,
 			<  560640000 3>,
 			<  675840000 4>,
-			<  721920000 5>;
+			<  721920000 5>,
+                        <  783360000 6>,
+                        <  806400000 7>,
+                        <  860160000 8>,
+                        <  883200000 9>;
 		#clock-cells = <1>;
 	 };
 
@@ -1003,7 +1021,8 @@
 		compatible = "qcom,msm-cpufreq";
 		clock-names = "l2_clk", "cpu0_clk", "cpu1_clk", "cpu2_clk",
 				"cpu3_clk", "cpu4_clk", "cpu5_clk",
-				"cpu6_clk", "cpu7_clk";
+				"cpu6_clk", "cpu7_clk", "cpu8_clk",
+				"cpu9_clk"; 
 		clocks = <&clock_cpu clk_cci_clk>,
 			 <&clock_cpu clk_a53_pwr_clk>,
 			 <&clock_cpu clk_a53_pwr_clk>,
@@ -1012,7 +1031,9 @@
 			 <&clock_cpu clk_a53_pwr_clk>,
 			 <&clock_cpu clk_a53_pwr_clk>,
 			 <&clock_cpu clk_a53_pwr_clk>,
-			 <&clock_cpu clk_a53_pwr_clk>;
+			 <&clock_cpu clk_a53_pwr_clk>,
+			 <&clock_cpu clk_a53_pwr_clk>,
+                         <&clock_cpu clk_a53_pwr_clk>;
 
 		qcom,cpufreq-table =
 			 <  652800 >,
@@ -1028,7 +1049,7 @@
 
 	cpubw: qcom,cpubw {
 		compatible = "qcom,devbw";
-		governor = "cpufreq";
+		governor = "bw_hwmon";
 		qcom,src-dst-ports = <1 512>;
 		qcom,active-only;
 		qcom,bw-tbl =
@@ -1042,12 +1063,14 @@
 			<  5859 /*  768   MHz */ >,     /* SVS+  */
 			<  6152 /*  806.4 MHz */ >,
 			<  6445 /*  844.8 MHz */ >,     /* NOM   */
-			<  7104 /*  931.2 MHz */ >;     /* TURBO */
+			<  7104 /*  931.2 MHz */ >,     /* TURBO */
+			<  7759 /*  1017.0 MHz */ >,
+			<  9887 /*  1296.0 MHz */ >;
 	};
 
 	mincpubw: qcom,mincpubw {
 		compatible = "qcom,devbw";
-		governor = "cpufreq";
+		governor = "performance";
 		qcom,src-dst-ports = <1 512>;
 		qcom,active-only;
 		qcom,bw-tbl =
@@ -1061,7 +1084,9 @@
 			<  5859 /*  768   MHz */ >,     /* SVS+  */
 			<  6152 /*  806.4 MHz */ >,
 			<  6445 /*  844.8 MHz */ >,     /* NOM   */
-			<  7104 /*  931.2 MHz */ >;     /* TURBO */
+			<  7104 /*  931.2 MHz */ >,     /* TURBO */
+                        <  7759 /*  1017.0 MHz */ >, 
+                        <  9887 /*  1296.0 MHz */ >;
 	};
 
 	qcom,cpu-bwmon {
@@ -1082,8 +1107,8 @@
 			 < 1401600  5859>,
 			 < 1689600  6445>,
 			 < 1804800  7104>,
-			 < 1958400  7104>,
-			 < 2208000  7104>;
+			 < 1958400  7759>,
+			 < 2208000  9887>;
 		};
 
 		mincpubw-cpufreq {

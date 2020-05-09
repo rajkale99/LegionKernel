@@ -104,6 +104,7 @@ enum glink_tracer_pkt_events {
 	GLINK_CORE_RX = 6,
 };
 
+#ifdef CONFIG_DEBUG_FS
 /**
  * glink_get_ss_enum_string() - get the name of the subsystem based on enum
  *				value
@@ -139,199 +140,72 @@ const char *glink_get_xprt_state_string(enum transport_state_e enum_id);
  * Return: name of the channel state, NULL in case of invalid input
  */
 const char *glink_get_ch_state_string(enum local_channel_state_e enum_id);
+#endif
 
-#define GLINK_IPC_LOG_STR(x...) do { \
-	if (glink_get_log_ctx()) \
-		ipc_log_string(glink_get_log_ctx(), x); \
-} while (0)
+#define GLINK_IPC_LOG_STR(x...) ((void)0)
 
-#define GLINK_DBG(x...) do {                              \
-	if (glink_get_debug_mask() & QCOM_GLINK_DEBUG) \
-		GLINK_IPC_LOG_STR(x);  \
-} while (0)
+#define GLINK_DBG(x...) ((void)0)
 
-#define GLINK_INFO(x...) do {                              \
-	if (glink_get_debug_mask() & QCOM_GLINK_INFO) \
-		GLINK_IPC_LOG_STR(x);  \
-} while (0)
+#define GLINK_INFO(x...) ((void)0)
 
-#define GLINK_INFO_PERF(x...) do {                              \
-	if (glink_get_debug_mask() & (QCOM_GLINK_INFO | QCOM_GLINK_PERF)) \
-		GLINK_IPC_LOG_STR(x);  \
-} while (0)
+#define GLINK_INFO_PERF(x...) ((void)0)
 
-#define GLINK_PERF(x...) do {                              \
-	if (glink_get_debug_mask() & QCOM_GLINK_PERF) \
-		GLINK_IPC_LOG_STR("<PERF> " x);  \
-} while (0)
+#define GLINK_PERF(x...) ((void)0)
 
 #define GLINK_UT_ERR(x...) do {                              \
 	if (!(glink_get_debug_mask() & QCOM_GLINK_PERF)) \
 		pr_err("<UT> " x); \
-	GLINK_IPC_LOG_STR("<UT> " x);  \
 } while (0)
 
-#define GLINK_UT_DBG(x...) do {                              \
-	if (glink_get_debug_mask() & QCOM_GLINK_DEBUG) \
-		GLINK_IPC_LOG_STR("<UT> " x);  \
-} while (0)
+#define GLINK_UT_DBG(x...) ((void)0)
 
-#define GLINK_UT_INFO(x...) do {                              \
-	if (glink_get_debug_mask() & QCOM_GLINK_INFO) \
-		GLINK_IPC_LOG_STR("<UT> " x);  \
-} while (0)
+#define GLINK_UT_INFO(x...) ((void)0)
 
-#define GLINK_UT_INFO_PERF(x...) do {                              \
-	if (glink_get_debug_mask() & (QCOM_GLINK_INFO | QCOM_GLINK_PERF)) \
-		GLINK_IPC_LOG_STR("<UT> " x);  \
-} while (0)
+#define GLINK_UT_INFO_PERF(x...) ((void)0)
 
-#define GLINK_UT_PERF(x...) do {                              \
-	if (glink_get_debug_mask() & QCOM_GLINK_PERF) \
-		GLINK_IPC_LOG_STR("<PERF> " x);  \
-} while (0)
+#define GLINK_UT_PERF(x...) ((void)0)
 
-#define GLINK_XPRT_IPC_LOG_STR(xprt, x...) do { \
-	if (glink_get_xprt_log_ctx(xprt)) \
-		ipc_log_string(glink_get_xprt_log_ctx(xprt), x); \
-} while (0)
+#define GLINK_XPRT_IPC_LOG_STR(xprt, x...) ((void)0)
 
-#define GLINK_XPRT_IF_INFO(xprt_if, x...) do { \
-	if (glink_get_debug_mask() & QCOM_GLINK_INFO) \
-		GLINK_XPRT_IPC_LOG_STR(xprt_if.glink_core_priv, "<XPRT> " x); \
-} while (0)
+#define GLINK_XPRT_IF_INFO(xprt_if, x...) ((void)0)
 
-#define GLINK_XPRT_IF_DBG(xprt_if, x...) do { \
-	if (glink_get_debug_mask() & QCOM_GLINK_DEBUG) \
-		GLINK_XPRT_IPC_LOG_STR(xprt_if.glink_core_priv, "<XPRT> " x); \
-} while (0)
+#define GLINK_XPRT_IF_DBG(xprt_if, x...) ((void)0)
 
 #define GLINK_XPRT_IF_ERR(xprt_if, x...) do { \
 	pr_err("<XPRT> " x); \
-	GLINK_XPRT_IPC_LOG_STR(xprt_if.glink_core_priv, "<XPRT> " x); \
 } while (0)
 
-#define GLINK_PERF_XPRT(xprt, fmt, args...) do { \
-	if (glink_get_debug_mask() & QCOM_GLINK_PERF) \
-		GLINK_XPRT_IPC_LOG_STR(xprt, "<PERF> %s:%s " fmt, \
-					xprt->name, xprt->edge, args);  \
-} while (0)
+#define GLINK_PERF_XPRT(xprt, fmt, args...) ((void)0)
 
-#define GLINK_PERF_CH(ctx, fmt, args...) do { \
-	if (glink_get_debug_mask() & QCOM_GLINK_PERF) \
-		GLINK_XPRT_IPC_LOG_STR(ctx->transport_ptr, \
-				"<PERF> %s:%s:%s[%u:%u] " fmt, \
-				ctx->transport_ptr->name, \
-				ctx->transport_ptr->edge, \
-				ctx->name, \
-				ctx->lcid, \
-				ctx->rcid, args);  \
-} while (0)
+#define GLINK_PERF_CH(ctx, fmt, args...) ((void)0)
 
-#define GLINK_PERF_CH_XPRT(ctx, xprt, fmt, args...) do { \
-	if (glink_get_debug_mask() & QCOM_GLINK_PERF) \
-		GLINK_XPRT_IPC_LOG_STR(xprt, \
-				"<PERF> %s:%s:%s[%u:%u] " fmt, \
-				xprt->name, \
-				xprt->edge, \
-				ctx->name, \
-				ctx->lcid, \
-				ctx->rcid, args);  \
-} while (0)
+#define GLINK_PERF_CH_XPRT(ctx, xprt, fmt, args...) ((void)0)
 
-#define GLINK_INFO_PERF_XPRT(xprt, fmt, args...) do { \
-	if (glink_get_debug_mask() & (QCOM_GLINK_INFO | QCOM_GLINK_PERF)) \
-		GLINK_XPRT_IPC_LOG_STR(xprt, "<CORE> %s:%s " fmt, \
-				xprt->name, xprt->edge, args);  \
-} while (0)
+#define GLINK_INFO_PERF_XPRT(xprt, fmt, args...) ((void)0)
 
-#define GLINK_INFO_PERF_CH(ctx, fmt, args...) do { \
-	if (glink_get_debug_mask() & (QCOM_GLINK_INFO | QCOM_GLINK_PERF)) \
-		GLINK_XPRT_IPC_LOG_STR(ctx->transport_ptr, \
-				"<CORE> %s:%s:%s[%u:%u] " fmt, \
-				ctx->transport_ptr->name, \
-				ctx->transport_ptr->edge, \
-				ctx->name, \
-				ctx->lcid, \
-				ctx->rcid, args);  \
-} while (0)
+#define GLINK_INFO_PERF_CH(ctx, fmt, args...) ((void)0)
 
-#define GLINK_INFO_PERF_CH_XPRT(ctx, xprt, fmt, args...) do { \
-	if (glink_get_debug_mask() & (QCOM_GLINK_INFO | QCOM_GLINK_PERF)) \
-		GLINK_XPRT_IPC_LOG_STR(xprt,\
-				"<CORE> %s:%s:%s[%u:%u] " fmt, \
-				xprt->name, \
-				xprt->edge, \
-				ctx->name, \
-				ctx->lcid, \
-				ctx->rcid, args);  \
-} while (0)
+#define GLINK_INFO_PERF_CH_XPRT(ctx, xprt, fmt, args...) ((void)0)
 
-#define GLINK_INFO_XPRT(xprt, fmt, args...) do { \
-	if (glink_get_debug_mask() & QCOM_GLINK_INFO) \
-		GLINK_XPRT_IPC_LOG_STR(xprt, "<CORE> %s:%s " fmt, \
-				xprt->name, xprt->edge, args);  \
-} while (0)
+#define GLINK_INFO_XPRT(xprt, fmt, args...) ((void)0)
 
-#define GLINK_INFO_CH(ctx, fmt, args...) do { \
-	if (glink_get_debug_mask() & QCOM_GLINK_INFO) \
-		GLINK_XPRT_IPC_LOG_STR(ctx->transport_ptr, \
-				"<CORE> %s:%s:%s[%u:%u] " fmt, \
-				ctx->transport_ptr->name, \
-				ctx->transport_ptr->edge, \
-				ctx->name, \
-				ctx->lcid, \
-				ctx->rcid, args);  \
-} while (0)
+#define GLINK_INFO_CH(ctx, fmt, args...) ((void)0)
 
-#define GLINK_INFO_CH_XPRT(ctx, xprt, fmt, args...) do { \
-	if (glink_get_debug_mask() & QCOM_GLINK_INFO) \
-		GLINK_XPRT_IPC_LOG_STR(xprt, \
-				"<CORE> %s:%s:%s[%u:%u] " fmt, \
-				xprt->name, \
-				xprt->edge, \
-				ctx->name, \
-				ctx->lcid, \
-				ctx->rcid, args);  \
-} while (0)
+#define GLINK_INFO_CH_XPRT(ctx, xprt, fmt, args...) ((void)0)
 
-#define GLINK_DBG_XPRT(xprt, fmt, args...) do { \
-	if (glink_get_debug_mask() & QCOM_GLINK_DEBUG) \
-		GLINK_XPRT_IPC_LOG_STR(xprt, "<CORE> %s:%s " fmt, \
-				xprt->name, xprt->edge, args);  \
-} while (0)
+#define GLINK_DBG_XPRT(xprt, fmt, args...) ((void)0)
 
-#define GLINK_DBG_CH(ctx, fmt, args...) do { \
-	if (glink_get_debug_mask() & QCOM_GLINK_DEBUG) \
-		GLINK_XPRT_IPC_LOG_STR(ctx->transport_ptr, \
-				"<CORE> %s:%s:%s[%u:%u] " fmt, \
-				ctx->transport_ptr->name, \
-				ctx->transport_ptr->edge, \
-				ctx->name, \
-				ctx->lcid, \
-				ctx->rcid, args);  \
-} while (0)
+#define GLINK_DBG_CH(ctx, fmt, args...) ((void)0)
 
-#define GLINK_DBG_CH_XPRT(ctx, xprt, fmt, args...) do { \
-	if (glink_get_debug_mask() & QCOM_GLINK_DEBUG) \
-		GLINK_XPRT_IPC_LOG_STR(xprt, \
-				"<CORE> %s:%s:%s[%u:%u] " fmt, \
-				xprt->name, \
-				xprt->edge, \
-				ctx->name, \
-				ctx->lcid, \
-				ctx->rcid, args);  \
-} while (0)
+#define GLINK_DBG_CH_XPRT(ctx, xprt, fmt, args...) ((void)0)
 
 #define GLINK_ERR(x...) do {                              \
 	pr_err_ratelimited("<CORE> " x); \
-	GLINK_IPC_LOG_STR("<CORE> " x);  \
 } while (0)
 
 #define GLINK_ERR_XPRT(xprt, fmt, args...) do { \
 	pr_err_ratelimited("<CORE> %s:%s " fmt, \
 		xprt->name, xprt->edge, args);  \
-	GLINK_INFO_XPRT(xprt, fmt, args); \
 } while (0)
 
 #define GLINK_ERR_CH(ctx, fmt, args...) do { \
@@ -341,7 +215,6 @@ const char *glink_get_ch_state_string(enum local_channel_state_e enum_id);
 		ctx->name, \
 		ctx->lcid, \
 		ctx->rcid, args);  \
-	GLINK_INFO_CH(ctx, fmt, args); \
 } while (0)
 
 #define GLINK_ERR_CH_XPRT(ctx, xprt, fmt, args...) do { \
@@ -351,7 +224,6 @@ const char *glink_get_ch_state_string(enum local_channel_state_e enum_id);
 		ctx->name, \
 		ctx->lcid, \
 		ctx->rcid, args);  \
-	GLINK_INFO_CH_XPRT(ctx, xprt, fmt, args); \
 } while (0)
 
 /**
@@ -408,6 +280,7 @@ int glink_get_channel_id_for_handle(void *handle);
  */
 char *glink_get_channel_name_for_handle(void *handle);
 
+#ifdef CONFIG_DEBUG_FS
 /**
  * glink_debugfs_init() - initialize glink debugfs directory
  *
@@ -483,6 +356,7 @@ void glink_debugfs_add_channel(struct channel_ctx *ch_ctx,
  * folders & other files in debugfs for that transport
  */
 void glink_debugfs_add_xprt(struct glink_core_xprt_ctx *xprt_ctx);
+#endif
 
 /**
  * glink_xprt_ctx_iterator_init() - Initializes the transport context list
@@ -1102,5 +976,72 @@ static inline void rwref_write_put(struct rwref_lock *lock_ptr)
 	spin_unlock_irqrestore(&lock_ptr->lock, flags);
 	kref_put(&lock_ptr->kref, rwref_lock_release);
 }
+
+#ifndef CONFIG_DEBUG_FS
+static inline
+const char *glink_get_ss_enum_string(unsigned int enum_id)
+{
+	return NULL;
+}
+
+static inline
+const char *glink_get_xprt_enum_string(unsigned int enum_id)
+{
+	return NULL;
+}
+
+static inline
+const char *glink_get_xprt_state_string(int enum_id)
+{
+	return NULL;
+}
+
+static inline
+const char *glink_get_ch_state_string(int enum_id)
+{
+	return NULL;
+}
+
+static inline
+void glink_debugfs_remove_channel(struct channel_ctx *ch_ctx,
+			struct glink_core_xprt_ctx *xprt_ctx)
+{
+}
+
+static inline
+void glink_debugfs_add_channel(struct channel_ctx *ch_ctx,
+		struct glink_core_xprt_ctx *xprt_ctx)
+{
+}
+
+static inline
+void glink_debugfs_add_xprt(struct glink_core_xprt_ctx *xprt_ctx)
+{
+}
+
+static inline
+void glink_debugfs_remove_recur(struct glink_dbgfs *dfs)
+{
+}
+
+static inline
+struct dentry *glink_debugfs_create(const char *name,
+		void (*show)(struct seq_file *),
+		struct glink_dbgfs *dir, void *dbgfs_data, bool b_free_req)
+{
+	return NULL;
+}
+
+static inline
+int glink_debugfs_init(void)
+{
+	return 0;
+}
+
+static inline
+void glink_debugfs_exit(void)
+{
+}
+#endif
 
 #endif /* _SOC_QCOM_GLINK_PRIVATE_H_ */

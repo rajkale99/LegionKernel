@@ -78,6 +78,7 @@ ssize_t bw_show(struct device *dev, struct device_attribute *attr,
 			bus_node->lnode_list[i].lnode_ab[ACTIVE_CTX],
 			bus_node->lnode_list[i].lnode_ib[DUAL_CTX],
 			bus_node->lnode_list[i].lnode_ab[DUAL_CTX]);
+#if defined(CONFIG_TRACING) && defined(DEBUG)
 		trace_printk(
 		"[%d]:%s:Act_IB %llu Act_AB %llu Slp_IB %llu Slp_AB %llu\n",
 			i, bus_node->lnode_list[i].cl_name,
@@ -85,6 +86,7 @@ ssize_t bw_show(struct device *dev, struct device_attribute *attr,
 			bus_node->lnode_list[i].lnode_ab[ACTIVE_CTX],
 			bus_node->lnode_list[i].lnode_ib[DUAL_CTX],
 			bus_node->lnode_list[i].lnode_ab[DUAL_CTX]);
+#endif
 	}
 	off += scnprintf((buf + off), PAGE_SIZE,
 	"Max_Act_IB %llu Sum_Act_AB %llu Act_Util_fact %d Act_Vrail_comp %d\n",
@@ -98,6 +100,7 @@ ssize_t bw_show(struct device *dev, struct device_attribute *attr,
 		bus_node->node_bw[DUAL_CTX].sum_ab,
 		bus_node->node_bw[DUAL_CTX].util_used,
 		bus_node->node_bw[DUAL_CTX].vrail_used);
+#if defined(CONFIG_TRACING) && defined(DEBUG)
 	trace_printk(
 	"Max_Act_IB %llu Sum_Act_AB %llu Act_Util_fact %d Act_Vrail_comp %d\n",
 		bus_node->node_bw[ACTIVE_CTX].max_ib,
@@ -110,6 +113,7 @@ ssize_t bw_show(struct device *dev, struct device_attribute *attr,
 		bus_node->node_bw[DUAL_CTX].sum_ab,
 		bus_node->node_bw[DUAL_CTX].util_used,
 		bus_node->node_bw[DUAL_CTX].vrail_used);
+#endif
 	return off;
 }
 
@@ -783,7 +787,7 @@ static void msm_bus_fab_init_noc_ops(struct msm_bus_node_device_type *bus_dev)
 		msm_bus_bimc_set_ops(bus_dev);
 		break;
 	default:
-		MSM_BUS_ERR("%s: Invalid Bus type", __func__);
+		MSM_BUS_ERR("%s: Invalid Bus type\n", __func__);
 	}
 }
 
@@ -1724,7 +1728,7 @@ static int msm_bus_device_probe(struct platform_device *pdev)
 	unsigned int i = 1, ret;
 	struct msm_bus_device_node_registration *pdata;
 
-	MSM_BUS_ERR("msm_bus: Probe started");
+	MSM_BUS_DBG("msm_bus: Probe started\n");
 	/* If possible, get pdata from device-tree */
 	if (pdev->dev.of_node)
 		pdata = msm_bus_of_to_pdata(pdev);
@@ -1733,7 +1737,7 @@ static int msm_bus_device_probe(struct platform_device *pdev)
 			dev.platform_data;
 	}
 
-	MSM_BUS_ERR("msm_bus: DT Parsing complete");
+	MSM_BUS_DBG("msm_bus: DT Parsing complete\n");
 
 	if (IS_ERR_OR_NULL(pdata)) {
 		MSM_BUS_ERR("No platform data found");

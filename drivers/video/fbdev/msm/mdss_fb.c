@@ -45,6 +45,7 @@
 #include <linux/file.h>
 #include <linux/kthread.h>
 #include <linux/dma-buf.h>
+#include <linux/cpu_input_boost.h>
 #include "mdss_fb.h"
 #include "mdss_mdp_splash_logo.h"
 #define CREATE_TRACE_POINTS
@@ -61,6 +62,10 @@ extern int change_par_buf;
 extern int LCM_effect[4];
 #else
 extern int LCM_effect[3];
+#endif
+
+#ifdef CONFIG_KLAPSE
+#include <linux/klapse.h>
 #endif
 
 #ifdef CONFIG_FB_MSM_TRIPLE_BUFFER
@@ -343,6 +348,9 @@ static void mdss_fb_set_bl_brightness(struct led_classdev *led_cdev,
 							!mfd->bl_level)) {
 		mutex_lock(&mfd->bl_lock);
 		mdss_fb_set_backlight(mfd, bl_lvl);
+#ifdef CONFIG_KLAPSE
+                set_rgb_slider(bl_lvl);
+#endif
 		mutex_unlock(&mfd->bl_lock);
 	}
 }
@@ -1959,6 +1967,7 @@ static struct platform_driver mdss_fb_driver = {
 		.name = "mdss_fb",
 		.of_match_table = mdss_fb_dt_match,
 		.pm = &mdss_fb_pm_ops,
+		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
 	},
 };
 
@@ -5293,6 +5302,9 @@ int mdss_fb_do_ioctl(struct fb_info *info, unsigned int cmd,
 		ret = mdss_fb_mode_switch(mfd, dsi_mode);
 		break;
 	case MSMFB_ATOMIC_COMMIT:
+		if (cpu_input_boost_within_input(3250)) {
+			cpu_input_boost_kick();
+		}
 		ret = mdss_fb_atomic_commit_ioctl(info, argp, file);
 		break;
 
